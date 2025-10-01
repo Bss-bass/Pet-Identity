@@ -6,10 +6,12 @@ from .forms import PetForm, MedicalRecordForm, RegistrationForm, UserProfileForm
 from django.views import View
 from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib.auth import authenticate, login, logout
-from django.http import FileResponse
+from django.http import FileResponse, Http404, HttpResponse
 from .utils import generate_qr_image
 from django.core.mail import send_mail
 from django.conf import settings
+import os
+import mimetypes
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import PasswordChangeForm
@@ -402,3 +404,32 @@ class DeleteMedicalRecordView(LoginRequiredMixin, PermissionRequiredMixin, View)
         pet_id = record.pet.id
         record.delete()
         return redirect('view_medical_record', pet_id=pet_id)
+
+
+class ServeMediaView(View):
+    """Custom view to serve media files in production"""
+    
+    def get(self, request, path):
+        # ตรวจสอบว่าไฟล์อยู่ใน media directory
+        file_path = os.path.join(settings.MEDIA_ROOT, path)
+        
+        # ตรวจสอบว่าไฟล์มีอยู่จริง
+        if not os.path.exists(file_path):
+            raise Http404("File not found")
+        
+        # ตรวจสอบว่าไฟล์อยู่ใน media directory (security check)
+        if not file_path.startswith(settings.MEDIA_ROOT):
+            raise Http404("File not found")
+        
+        # หา content type
+        content_type, _ = mimetypes.guess_type(file_path)
+        if content_type is None:
+            content_type = 'application/octet-stream'
+        
+        # อ่านไฟล์และส่งกลับ
+        try:
+            with open(file_path, 'rb') as f:
+                response = HttpResponse(f.read(), content_type=content_type)
+                return response
+        except IOError:
+            raise Http404("File not found")

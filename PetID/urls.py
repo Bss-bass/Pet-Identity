@@ -15,15 +15,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from core.views import ServeMediaView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('core/', include('core.urls')),
+    # Custom media serving for production
+    re_path(r'^media/(?P<path>.*)$', ServeMediaView.as_view(), name='serve_media'),
 ]
 
-# สำหรับแสดงไฟล์ media และ static files (ทั้ง development และ production)
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# สำหรับแสดงไฟล์ static files
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# เพิ่ม static serving สำหรับ development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

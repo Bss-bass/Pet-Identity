@@ -16,6 +16,7 @@ pipeline {
     EMAIL_HOST_USER = credentials('email-host-user-id')
     EMAIL_HOST_PASSWORD = credentials('email-host-password-id')
     DEFAULT_FROM_EMAIL = credentials('default-from-email-id')
+    SERVER_IP = "34.126.186.165" // Replace with your actual server IP
     COMPOSE_PATH = "/docker-compose.yml"
   }
 
@@ -63,6 +64,8 @@ pipeline {
           DEBUG=False
           STATIC_ROOT=/app/static
           MEDIA_ROOT=/app/media
+          ALLOWED_HOSTS=localhost,127.0.0.1,$SERVER_IP
+          CSRF_TRUSTED_ORIGINS=http://$SERVER_IP,http://$SERVER_IP:8001,http://$SERVER_IP:8002
         """
       }
     }

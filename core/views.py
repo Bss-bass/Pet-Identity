@@ -347,7 +347,10 @@ class EditUserProfileView(LoginRequiredMixin, PermissionRequiredMixin, View):
         form = UserProfileForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
-            return redirect('dashboard')
+            if request.user.role == 'OWNER':
+                return redirect('dashboard')
+            elif request.user.role == 'DOCTOR':
+                return redirect('doctor_dashboard')
         return render(request, 'edit_user_profile.html', {'form': form})
 
 class EditPetView(LoginRequiredMixin, PermissionRequiredMixin, View):

@@ -6,6 +6,7 @@ from .forms import PetForm, MedicalRecordForm, RegistrationForm, UserProfileForm
 from django.views import View
 from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import Group
 from django.http import FileResponse, Http404, HttpResponse
 from .utils import generate_qr_image
 from django.core.mail import send_mail
@@ -43,11 +44,23 @@ class LoginView(View):
             # check user role and redirect accordingly
             if user.role == 'OWNER':
                 user.groups.clear()
-                user.groups.add(1)
+                try:
+                    owner_group = Group.objects.get(name='Owner')
+                    user.groups.add(owner_group)
+                except Group.DoesNotExist:
+                    # Create Owner group if it doesn't exist
+                    owner_group = Group.objects.create(name='Owner')
+                    user.groups.add(owner_group)
                 return redirect('dashboard')
             elif user.role == 'DOCTOR':
                 user.groups.clear()
-                user.groups.add(2)
+                try:
+                    doctor_group = Group.objects.get(name='Doctor')
+                    user.groups.add(doctor_group)
+                except Group.DoesNotExist:
+                    # Create Doctor group if it doesn't exist
+                    doctor_group = Group.objects.create(name='Doctor')
+                    user.groups.add(doctor_group)
                 return redirect('doctor_dashboard')
         return render(request, 'login.html', {'error': 'Invalid credentials'})
 

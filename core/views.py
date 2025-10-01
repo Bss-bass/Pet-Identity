@@ -91,7 +91,7 @@ class DoctorDashboardView(LoginRequiredMixin, PermissionRequiredMixin, View):
         return render(request, 'doctor_dashboard.html', {'pets': pets, 'total_records': total_records})
 
 class CreatePetView(LoginRequiredMixin, PermissionRequiredMixin, View):
-    permission_required = 'core.add_pet'
+    permission_required = ['core.add_pet']
 
     def get(self, request):
         if request.user.role != 'OWNER':

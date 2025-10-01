@@ -17,8 +17,6 @@ pipeline {
     EMAIL_HOST_PASSWORD = credentials('email-host-password-id')
     DEFAULT_FROM_EMAIL = credentials('default-from-email-id')
     COMPOSE_PATH = "/docker-compose.yml"
-    STATIC_ROOT = "/app/static"
-    MEDIA_ROOT = "/app/media"
   }
 
   stages {

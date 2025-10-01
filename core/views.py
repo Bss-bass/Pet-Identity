@@ -41,11 +41,11 @@ class LoginView(View):
             # check user role and redirect accordingly
             if user.role == 'OWNER':
                 user.groups.clear()
-                user.groups.add(2)
+                user.groups.add(1)
                 return redirect('dashboard')
             elif user.role == 'DOCTOR':
                 user.groups.clear()
-                user.groups.add(1)
+                user.groups.add(2)
                 return redirect('doctor_dashboard')
         return render(request, 'login.html', {'error': 'Invalid credentials'})
 

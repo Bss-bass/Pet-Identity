@@ -13,4 +13,10 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . /app/
 
+# สร้าง directories สำหรับ static และ media files
+RUN mkdir -p /app/static /app/media
+
+# Set permissions
+RUN chmod 755 /app/static /app/media
+
 CMD ["gunicorn", "PetID.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--threads", "2", "--timeout", "60"]

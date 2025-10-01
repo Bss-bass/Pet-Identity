@@ -24,6 +24,6 @@ urlpatterns = [
     path('core/', include('core.urls')),
 ]
 
-# สำหรับแสดงไฟล์ media ใน development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# สำหรับแสดงไฟล์ media และ static files
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

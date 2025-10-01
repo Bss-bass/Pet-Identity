@@ -29,6 +29,7 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", cast=bool)
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "34.126.186.165"]
+CSRF_TRUSTED_ORIGINS = ["http://34.126.186.165", "http://34.126.186.165:8001", "http://34.126.186.165:8002"]
 
 
 # Application definition

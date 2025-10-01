@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    IMAGE_NAME = "siwapatbass/petId"
+    IMAGE_NAME = "siwapatbass/petid"
     TAG = "latest"
     DOCKER_CREDENTIALS = "docker-hub-credentials-id" // Replace with your Docker Hub credentials ID
     DB_NAME = credentials('db-name-id')

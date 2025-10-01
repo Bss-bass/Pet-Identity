@@ -1,17 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from .models import Pet, Doctor, MedicalRecord
 from .forms import PetForm, MedicalRecordForm, RegistrationForm, UserProfileForm, PetEditForm
 from django.views import View
 from django.http import HttpResponseForbidden, JsonResponse
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.http import FileResponse
 from .utils import generate_qr_image
 from django.core.mail import send_mail
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth.forms import PasswordChangeForm
 import uuid
 import json
 
@@ -39,12 +40,34 @@ class LoginView(View):
             login(request, user)
             # check user role and redirect accordingly
             if user.role == 'OWNER':
+                user.groups.clear()
+                user.groups.add(2)
                 return redirect('dashboard')
             elif user.role == 'DOCTOR':
+                user.groups.clear()
+                user.groups.add(1)
                 return redirect('doctor_dashboard')
         return render(request, 'login.html', {'error': 'Invalid credentials'})
 
-class DashboardView(LoginRequiredMixin, View):
+class LogoutView(LoginRequiredMixin, View):
+    def post(self, request):
+        logout(request)
+        return redirect('login')
+
+class PasswordChangeView(LoginRequiredMixin, View):
+    def get(self, request):
+        return render(request, 'change_password.html')
+
+    def post(self, request):
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+        return render(request, 'change_password.html', {'form': form})
+
+class DashboardView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = ['core.view_pet', 'core.view_medicalrecord', 'core.view_doctor']
+
     def get(self, request):
         if request.user.role != 'OWNER':
             return HttpResponseForbidden("You are not authorized to view this page.")
@@ -53,7 +76,10 @@ class DashboardView(LoginRequiredMixin, View):
             return redirect('create_pet')
         return render(request, 'owner_dashboard.html', {'pets': pets})
     
-class DoctorDashboardView(LoginRequiredMixin, View):
+class DoctorDashboardView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    login_url = '/core/login/'
+    permission_required = ['core.view_medicalrecord', 'core.view_pet']
+
     def get(self, request):
         if request.user.role != 'DOCTOR':
             return HttpResponseForbidden("You are not authorized to view this page.")
@@ -64,7 +90,9 @@ class DoctorDashboardView(LoginRequiredMixin, View):
         total_records = MedicalRecord.objects.filter(doctor=doctor).count()
         return render(request, 'doctor_dashboard.html', {'pets': pets, 'total_records': total_records})
 
-class CreatePetView(LoginRequiredMixin, View):
+class CreatePetView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'core.add_pet'
+
     def get(self, request):
         if request.user.role != 'OWNER':
             return HttpResponseForbidden("You are not authorized to view this page.")
@@ -89,6 +117,8 @@ class PetCardView(View):
         return render(request, 'pet_card.html', {'pet': pet})
 
 class GenerateQRCodeView(LoginRequiredMixin, View):
+    login_url = '/core/login/'
+
     def get(self, request, pet_id):
         if request.user.role != 'OWNER':
             return HttpResponseForbidden("You are not authorized to perform this action.")
@@ -100,7 +130,9 @@ class GenerateQRCodeView(LoginRequiredMixin, View):
         response['Content-Disposition'] = f'attachment; filename="{pet.name}_qr_code.png"'
         return response
 
-class GrantAccessView(LoginRequiredMixin, View):
+class GrantAccessView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = ['core.change_pet', 'core.view_doctor']
+
     def get(self, request, pet_id):
         if request.user.role != 'OWNER':
             return HttpResponseForbidden("You are not authorized to perform this action.")
@@ -123,7 +155,9 @@ class GrantAccessView(LoginRequiredMixin, View):
         
         return redirect('dashboard')
 
-class ViewMedicalRecordView(LoginRequiredMixin, View):
+class ViewMedicalRecordView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = ['core.view_medicalrecord', 'core.view_pet']
+
     def get(self, request, pet_id):
         pet = get_object_or_404(Pet, id=pet_id)
         
@@ -160,7 +194,9 @@ class ViewMedicalRecordView(LoginRequiredMixin, View):
         medical_records = MedicalRecord.objects.filter(pet=pet).order_by('-date')
         return render(request, 'medical_record.html', {'pet': pet, 'medical_records': medical_records, 'form': form})
 
-class AddMedicalRecordView(LoginRequiredMixin, View):
+class AddMedicalRecordView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = ['core.add_medicalrecord', 'core.view_pet']
+
     def get(self, request, pet_id):
         if request.user.role != 'DOCTOR':
             return HttpResponseForbidden("You are not authorized to perform this action.")
@@ -194,7 +230,9 @@ class AddMedicalRecordView(LoginRequiredMixin, View):
         
         return render(request, 'add_medical_record.html', {'pet': pet, 'form': form})
 
-class ToggleLostStatusView(LoginRequiredMixin, View):
+class ToggleLostStatusView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'core.change_pet'
+
     def post(self, request, pet_id):
         if request.user.role != 'OWNER':
             return HttpResponseForbidden("You are not authorized to perform this action.")
@@ -207,19 +245,19 @@ class ToggleLostStatusView(LoginRequiredMixin, View):
         
         return redirect('dashboard')
     
-class ReportLostPetView(LoginRequiredMixin, View):
-    def post(self, request, pet_id):
-        if request.user.role != 'OWNER':
-            return HttpResponseForbidden("You are not authorized to perform this action.")
+# class ReportLostPetView(LoginRequiredMixin, View):
+#     def post(self, request, pet_id):
+#         if request.user.role != 'OWNER':
+#             return HttpResponseForbidden("You are not authorized to perform this action.")
         
-        pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
+#         pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
         
-        subject = f"📢 มีคนพบสัตว์เลี้ยงของคุณ: {pet.name}"
-        body = f""
-        send_mail(subject, body, "no-reply@yourdomain.com", [pet.owner.email])
-        pet.save()
+#         subject = f"📢 มีคนพบสัตว์เลี้ยงของคุณ: {pet.name}"
+#         body = f""
+#         send_mail(subject, body, "no-reply@yourdomain.com", [pet.owner.email])
+#         pet.save()
         
-        return redirect('dashboard')
+#         return redirect('dashboard')
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SendLocationAlertView(View):
@@ -283,7 +321,9 @@ PetID Team
             print(f"Location alert error: {e}")
             return JsonResponse({'success': False, 'error': 'Server error occurred'})
 
-class EditUserProfileView(LoginRequiredMixin, View):
+class EditUserProfileView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = ['core.change_user', 'core.view_user']
+
     def get(self, request):
         form = UserProfileForm(instance=request.user)
         return render(request, 'edit_user_profile.html', {'form': form})
@@ -295,7 +335,9 @@ class EditUserProfileView(LoginRequiredMixin, View):
             return redirect('dashboard')
         return render(request, 'edit_user_profile.html', {'form': form})
 
-class EditPetView(LoginRequiredMixin, View):
+class EditPetView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = ['core.change_pet', 'core.view_pet']
+
     def get(self, request, pet_id):
         pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
         form = PetEditForm(instance=pet)
@@ -309,7 +351,9 @@ class EditPetView(LoginRequiredMixin, View):
             return redirect('dashboard')
         return render(request, 'edit_pet.html', {'form': form, 'pet': pet})
 
-class EditMedicalRecordView(LoginRequiredMixin, View):
+class EditMedicalRecordView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = ['core.change_medicalrecord', 'core.view_medicalrecord']
+
     def get(self, request, record_id):
         if request.user.role != 'DOCTOR':
             return HttpResponseForbidden("You are not authorized to perform this action.")
@@ -341,7 +385,9 @@ class EditMedicalRecordView(LoginRequiredMixin, View):
             return redirect('view_medical_record', pet_id=record.pet.id)
         return render(request, 'edit_medical_record.html', {'form': form, 'record': record, 'pet': record.pet})
 
-class DeleteMedicalRecordView(LoginRequiredMixin, View):
+class DeleteMedicalRecordView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = ['core.delete_medicalrecord']
+
     def post(self, request, record_id):
         if request.user.role != 'DOCTOR':
             return HttpResponseForbidden("You are not authorized to perform this action.")

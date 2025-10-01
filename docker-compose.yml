@@ -1,0 +1,131 @@
+version: '3.8'
+
+services:
+  web1:
+    image: siwapatbass/petId:latest
+    container_name: petId_web1
+    command: gunicorn PetID.wsgi:application --bind 0.0.0.0:8000 --workers=2 --threads=2 --timeout=60
+    env_file:
+      - .env
+    environment:
+      - CONTAINER_NAME=web1
+    ports:
+      - "8001:8000"
+    depends_on:
+      - db
+    volumes:
+      - static_volume:/app/static
+      - media_volume:/app/media
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  web2:
+    image: siwapatbass/petId:latest
+    container_name: petId_web2
+    command: gunicorn PetID.wsgi:application --bind 0.0.0.0:8000 --workers=2 --threads=2 --timeout=60
+    env_file:
+      - .env
+    environment:
+      - CONTAINER_NAME=web2
+    ports:
+      - "8002:8000"
+    depends_on:
+      - db
+    volumes:
+      - static_volume:/app/static
+      - media_volume:/app/media
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  nginx:
+    image: nginx:latest
+    container_name: petId_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/app/static:ro
+      - media_volume:/app/media:ro
+    depends_on:
+      - web1
+      - web2
+    restart: always
+    networks:
+      - backend
+
+  db:
+    image: postgres:15
+    container_name: petid_db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  prometheus:
+    image: prom/prometheus
+    container_name: petId_prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - backend
+
+  grafana:
+    image: grafana/grafana
+    container_name: petId_grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - backend
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: petId_cadvisor
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - backend
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: petId_node_exporter
+    ports:
+      - "9100:9100"
+    restart: always
+    pid: "host"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - backend
+
+volumes:
+  pgdata:
+  static_volume:
+  media_volume:
+
+networks:
+  backend:

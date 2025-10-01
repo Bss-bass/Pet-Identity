@@ -17,6 +17,17 @@ class RegistrationForm(ModelForm):
             "phone_number": forms.TextInput(attrs={"class": "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"}),
         }
 
+    def clean_password1(self):
+        # valid passsword strength
+        p1 = self.cleaned_data.get("password1")
+        if len(p1) < 8:
+            raise forms.ValidationError("Password must be at least 8 characters long")
+        if not any(char.isdigit() for char in p1):
+            raise forms.ValidationError("Password must contain at least one digit")
+        if not any(char.isalpha() for char in p1):
+            raise forms.ValidationError("Password must contain at least one letter")
+        return p1
+
     def clean_password2(self):
         p1 = self.cleaned_data.get("password1")
         p2 = self.cleaned_data.get("password2")
@@ -33,7 +44,7 @@ class RegistrationForm(ModelForm):
 
 class LoginForm(forms.Form):
     email = forms.EmailField(label="Email")
-    password = forms.CharField(label="Password", widget=forms.PasswordInput)
+    password = forms.CharField(label="Password", widget=forms.PasswordInput(attrs={"autocomplete": "current-password", "class": "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"}))
 
 class PetForm(ModelForm):
     class Meta:

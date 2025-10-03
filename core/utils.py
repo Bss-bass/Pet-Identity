@@ -2,10 +2,11 @@ import qrcode
 from io import BytesIO
 from django.http import HttpResponse
 from PIL import Image, ImageDraw, ImageFont
+from decouple import config
 
 def generate_qr_image(qr_slug):
-    # สร้าง URL เต็มสำหรับ Pet Card
-    base_url = "http://localhost:8000"  # ในการใช้งานจริงให้ใช้ domain จริง
+    # สร้าง URL เต็มสำหรับ Pet Card โดยใช้ SERVER_IP จาก .env
+    base_url = config('SERVER_IP', default='http://localhost:8000')
     full_url = f"{base_url}/core/pet/{qr_slug}/card/"
     
     # สร้าง QR Code

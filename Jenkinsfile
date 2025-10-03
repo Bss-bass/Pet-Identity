@@ -16,7 +16,7 @@ pipeline {
     EMAIL_HOST_USER = credentials('email-host-user-id')
     EMAIL_HOST_PASSWORD = credentials('email-host-password-id')
     DEFAULT_FROM_EMAIL = credentials('default-from-email-id')
-    SERVER_IP = "34.126.186.165" // Replace with your actual server IP
+    SERVER_IP = "35.187.250.176" // Replace with your actual server IP
     COMPOSE_PATH = "/docker-compose.yml"
   }
 

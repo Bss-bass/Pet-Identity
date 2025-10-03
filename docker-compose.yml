@@ -51,7 +51,7 @@ services:
     image: nginx:latest
     container_name: petid_nginx
     ports:
-      - "80:80"
+      - "8088:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - static_volume:/app/static:ro

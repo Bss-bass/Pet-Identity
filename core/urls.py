@@ -17,6 +17,7 @@ urlpatterns = [
     path('pet/<uuid:pet_id>/toggle-lost/', views.ToggleLostStatusView.as_view(), name='toggle_lost_status'),
     # path('report-lost-pet/<uuid:pet_id>/', views.ReportLostPetView.as_view(), name='report_lost_pet'),
     path('pet/<uuid:pet_id>/send-location-alert/', views.SendLocationAlertView.as_view(), name='send_location_alert'),
+    path('pet/<uuid:pet_id>/send-manual-location-alert/', views.SendManualLocationAlertView.as_view(), name='send_manual_location_alert'),
     path('profile/edit/', views.EditUserProfileView.as_view(), name='edit_user_profile'),
     path('pet/<uuid:pet_id>/edit/', views.EditPetView.as_view(), name='edit_pet'),
     path('medical-record/<int:record_id>/edit/', views.EditMedicalRecordView.as_view(), name='edit_medical_record'),

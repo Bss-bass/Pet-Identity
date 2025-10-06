@@ -336,6 +336,76 @@ PetID Team
             print(f"Location alert error: {e}")
             return JsonResponse({'success': False, 'error': 'Server error occurred'})
 
+@method_decorator(csrf_exempt, name='dispatch')
+class SendManualLocationAlertView(View):
+    def post(self, request, pet_id):
+        try:
+            # Get the pet information
+            pet = get_object_or_404(Pet, id=pet_id)
+            
+            # Parse JSON data from request
+            data = json.loads(request.body)
+            location_description = data.get('locationDescription', '').strip()
+            contact_info = data.get('contactInfo', '').strip()
+            timestamp = data.get('timestamp')
+            
+            if not location_description:
+                return JsonResponse({'success': False, 'error': 'Location description is required'})
+            
+            # Prepare email content
+            subject = f"🔍 Location Report for {pet.name}"
+            
+            email_body = f"""
+Hello {pet.owner.first_name} {pet.owner.last_name},
+
+Someone has found your pet {pet.name} and provided the following location information:
+
+📍 Location Description:
+{location_description}
+
+📅 Report Time: {timestamp}
+"""
+            
+            if contact_info:
+                email_body += f"""
+👤 Contact Information: {contact_info}
+"""
+            
+            email_body += """
+Please contact the person who found your pet as soon as possible.
+
+Best regards,
+PetID Team
+            """
+            
+            # Send email to pet owner
+            try:
+                send_mail(
+                    subject=subject,
+                    message=email_body,
+                    from_email='petid555@gmail.com',
+                    recipient_list=[pet.owner.email],
+                    fail_silently=False,
+                )
+                
+                return JsonResponse({
+                    'success': True, 
+                    'message': 'Manual location report sent successfully to pet owner!'
+                })
+                
+            except Exception as email_error:
+                print(f"Email sending error: {email_error}")
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Failed to send location report email'
+                })
+                
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
+        except Exception as e:
+            print(f"Manual location alert error: {e}")
+            return JsonResponse({'success': False, 'error': 'Server error occurred'})
+
 class EditUserProfileView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = ['core.change_user', 'core.view_user']
 

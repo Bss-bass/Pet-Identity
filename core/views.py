@@ -516,6 +516,17 @@ class ServeMediaView(View):
         try:
             with open(file_path, 'rb') as f:
                 response = HttpResponse(f.read(), content_type=content_type)
+                
+                # เพิ่ม headers เพื่อแก้ปัญหาการ cache และ CORS
+                response['Cache-Control'] = 'public, max-age=86400'  # Cache 1 วัน
+                response['Access-Control-Allow-Origin'] = '*'
+                response['Access-Control-Allow-Methods'] = 'GET'
+                response['Access-Control-Allow-Headers'] = 'Content-Type'
+                
+                # เพิ่ม filename สำหรับ download
+                filename = os.path.basename(file_path)
+                response['Content-Disposition'] = f'inline; filename="{filename}"'
+                
                 return response
         except IOError:
             raise Http404("File not found")

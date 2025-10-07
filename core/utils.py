@@ -6,8 +6,8 @@ from decouple import config
 
 def generate_qr_image(qr_slug):
     # สร้าง URL เต็มสำหรับ Pet Card โดยใช้ SERVER_IP จาก .env
-    server_ip = config('SERVER_IP', default='http://localhost:8000')
-    full_url = f"{server_ip}/core/pet/{qr_slug}/card/"
+    ngrok_domain = config('NGROK_DOMAIN', default='http://localhost:8000')
+    full_url = f"{ngrok_domain}/core/pet/{qr_slug}/card/"
     
     # สร้าง QR Code
     qr = qrcode.QRCode(

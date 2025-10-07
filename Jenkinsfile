@@ -66,6 +66,7 @@ pipeline {
           STATIC_ROOT=/app/static
           MEDIA_ROOT=/app/media
           SERVER_IP=http://$SERVER_IP:8001
+          NGROK_DOMAIN=https://$NGROK_DOMAIN
           ALLOWED_HOSTS=localhost,127.0.0.1,$SERVER_IP,$NGROK_DOMAIN
           CSRF_TRUSTED_ORIGINS=http://$SERVER_IP,http://$SERVER_IP:8001,http://$SERVER_IP:8002,https://$NGROK_DOMAIN
         """

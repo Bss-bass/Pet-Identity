@@ -17,6 +17,7 @@ pipeline {
     EMAIL_HOST_PASSWORD = credentials('email-host-password-id')
     DEFAULT_FROM_EMAIL = credentials('default-from-email-id')
     SERVER_IP = "34.158.43.181" // Replace with your actual server IP
+    NGROK_DOMAIN = "unslimly-nonarticulative-lindsy.ngrok-free.dev" // Replace with your actual ngrok domain
     COMPOSE_PATH = "/docker-compose.yml"
   }
 
@@ -65,8 +66,8 @@ pipeline {
           STATIC_ROOT=/app/static
           MEDIA_ROOT=/app/media
           SERVER_IP=http://$SERVER_IP:8001
-          ALLOWED_HOSTS=localhost,127.0.0.1,$SERVER_IP
-          CSRF_TRUSTED_ORIGINS=http://$SERVER_IP,http://$SERVER_IP:8001,http://$SERVER_IP:8002
+          ALLOWED_HOSTS=localhost,127.0.0.1,$SERVER_IP,$NGROK_DOMAIN
+          CSRF_TRUSTED_ORIGINS=http://$SERVER_IP,http://$SERVER_IP:8001,http://$SERVER_IP:8002,https://$NGROK_DOMAIN
         """
       }
     }

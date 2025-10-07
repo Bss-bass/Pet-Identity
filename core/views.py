@@ -517,11 +517,13 @@ class ServeMediaView(View):
             with open(file_path, 'rb') as f:
                 response = HttpResponse(f.read(), content_type=content_type)
                 
-                # เพิ่ม headers เพื่อแก้ปัญหาการ cache และ CORS
+                # เพิ่ม headers เพื่อแก้ปัญหาการ cache และ CORS (รองรับ ngrok)
                 response['Cache-Control'] = 'public, max-age=86400'  # Cache 1 วัน
                 response['Access-Control-Allow-Origin'] = '*'
                 response['Access-Control-Allow-Methods'] = 'GET'
-                response['Access-Control-Allow-Headers'] = 'Content-Type'
+                response['Access-Control-Allow-Headers'] = 'Content-Type, ngrok-skip-browser-warning'
+                response['X-Frame-Options'] = 'SAMEORIGIN'
+                response['ngrok-skip-browser-warning'] = 'true'  # Skip ngrok warning
                 
                 # เพิ่ม filename สำหรับ download
                 filename = os.path.basename(file_path)

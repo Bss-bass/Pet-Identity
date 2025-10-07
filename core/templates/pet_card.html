@@ -2,7 +2,8 @@
 
 {% block extra_head %}
     {% if pet.avatar %}
-        <link rel="preload" href="{{ pet.avatar.url }}" as="image">
+        <link rel="preload" href="{{ pet.avatar.url }}" as="image" crossorigin="anonymous">
+        <meta name="referrer" content="no-referrer-when-downgrade">
     {% endif %}
 {% endblock %}
 
@@ -38,9 +39,12 @@
                                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                             </div>
                             <!-- Actual image -->
-                            <img src="{{ pet.avatar.url }}" alt="{{ pet.name }}" 
+                            <img src="{{ pet.avatar.url }}{% if 'ngrok' in request.get_host %}?ngrok-skip-browser-warning=1{% endif %}" alt="{{ pet.name }}" 
                                  id="petImage"
                                  class="w-48 h-48 object-cover rounded-full border-8 border-blue-100 shadow-lg opacity-0 transition-opacity duration-300"
+                                 crossorigin="anonymous"
+                                 referrerpolicy="no-referrer-when-downgrade"
+                                 data-original-src="{{ pet.avatar.url }}"
                                  onload="this.style.opacity='1'; document.getElementById('imgLoading').style.display='none';"
                                  onerror="handleImageError(this);">
                         </div>
@@ -246,16 +250,66 @@ function handleImageError(img) {
     // Replace the image with default avatar
     img.parentNode.appendChild(defaultAvatar);
     
-    // Try to reload the image after a delay
+    // Try to reload the image after a delay with multiple approaches
     setTimeout(() => {
-        const newImg = new Image();
-        newImg.onload = function() {
-            // Image loaded successfully, replace default avatar
-            defaultAvatar.style.display = 'none';
-            img.style.display = 'block';
-            img.style.opacity = '1';
+        const originalSrc = img.dataset.originalSrc || img.src;
+        
+        // First try: Fetch with ngrok headers then convert to blob URL
+        const fetchWithHeaders = (url) => {
+            return fetch(url, {
+                method: 'GET',
+                headers: {
+                    'ngrok-skip-browser-warning': '1',
+                },
+                credentials: 'include',
+                mode: 'cors'
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Fetch failed');
+                return response.blob();
+            })
+            .then(blob => {
+                const blobUrl = URL.createObjectURL(blob);
+                const testImg = new Image();
+                testImg.onload = function() {
+                    defaultAvatar.style.display = 'none';
+                    img.src = blobUrl;
+                    img.style.display = 'block';
+                    img.style.opacity = '1';
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+                };
+                testImg.src = blobUrl;
+            });
         };
-        newImg.src = img.src + '?t=' + new Date().getTime(); // Add timestamp to bypass cache
+        
+        // Second try: Direct image load with parameters
+        const tryDirectLoad = (url) => {
+            const testImg = new Image();
+            testImg.crossOrigin = 'anonymous';
+            testImg.referrerPolicy = 'no-referrer-when-downgrade';
+            testImg.onload = function() {
+                defaultAvatar.style.display = 'none';
+                img.src = url;
+                img.style.display = 'block';
+                img.style.opacity = '1';
+            };
+            testImg.onerror = function() {
+                console.warn('All image loading attempts failed');
+            };
+            testImg.src = url;
+        };
+        
+        // Create URL with ngrok parameters
+        const url = new URL(originalSrc, window.location.origin);
+        url.searchParams.set('ngrok-skip-browser-warning', '1');
+        url.searchParams.set('t', Date.now());
+        
+        // Try fetch approach first, fallback to direct load
+        fetchWithHeaders(url.toString())
+            .catch(() => {
+                console.log('Fetch approach failed, trying direct load');
+                tryDirectLoad(url.toString());
+            });
     }, 2000);
 }
 

@@ -65,7 +65,7 @@ pipeline {
           DEBUG=False
           STATIC_ROOT=/app/static
           MEDIA_ROOT=/app/media
-          MEDIA_URL=/media/
+          MEDIA_URL=https://$NGROK_DOMAIN/media/
           SERVER_IP=http://$SERVER_IP:8001
           NGROK_DOMAIN=https://$NGROK_DOMAIN
           ALLOWED_HOSTS=localhost,127.0.0.1,$SERVER_IP,$NGROK_DOMAIN

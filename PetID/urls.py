@@ -31,6 +31,11 @@ urlpatterns = [
 # สำหรับแสดงไฟล์ static files
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-# เพิ่ม static serving สำหรับ development
+# Media files serving - ทำงานทั้ง development และ production
+# ใน production nginx จะ handle /media/ แต่ fallback ไปที่ Django ถ้าจำเป็น
 if settings.DEBUG:
+    # Development: ใช้ Django's static file serving
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    # Production: ใช้ custom ServeMediaView สำหรับ fallback
+    pass  # ServeMediaView ถูกกำหนดไว้แล้วด้านบน

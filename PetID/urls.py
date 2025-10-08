@@ -19,8 +19,11 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from core.views import ServeMediaView
+from django.shortcuts import redirect
 
 urlpatterns = [
+    # ถ้าอยู่ path / ให้ redirect ไปที่ /core/
+    path('', lambda request: redirect('/core/'), name='root_redirect'),
     path('admin/', admin.site.urls),
     path('core/', include('core.urls')),
     # Custom media serving for production

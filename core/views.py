@@ -259,20 +259,6 @@ class ToggleLostStatusView(LoginRequiredMixin, PermissionRequiredMixin, View):
         pet.save()
         
         return redirect('dashboard')
-    
-# class ReportLostPetView(LoginRequiredMixin, View):
-#     def post(self, request, pet_id):
-#         if request.user.role != 'OWNER':
-#             return HttpResponseForbidden("You are not authorized to perform this action.")
-        
-#         pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
-        
-#         subject = f"📢 มีคนพบสัตว์เลี้ยงของคุณ: {pet.name}"
-#         body = f""
-#         send_mail(subject, body, "no-reply@yourdomain.com", [pet.owner.email])
-#         pet.save()
-        
-#         return redirect('dashboard')
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SendLocationAlertView(View):

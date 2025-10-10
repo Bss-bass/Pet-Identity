@@ -28,7 +28,7 @@ urlpatterns = [
     path('core/', include('core.urls')),
     # Custom media serving for production
     # comment ตอน server-side
-    # re_path(r'^media/(?P<path>.*)$', ServeMediaView.as_view(), name='serve_media'),
+    re_path(r'^media/(?P<path>.*)$', ServeMediaView.as_view(), name='serve_media'),
 ]
 
 # สำหรับแสดงไฟล์ static files

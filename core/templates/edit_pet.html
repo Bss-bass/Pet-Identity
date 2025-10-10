@@ -147,14 +147,6 @@
 
                     <!-- Action Buttons -->
                     <div class="flex space-x-4 pt-6">
-                        <button type="submit" 
-                                class="flex-1 bg-gradient-to-r from-pink-500 to-orange-500 text-white px-6 py-3 rounded-xl hover:from-pink-600 hover:to-orange-600 transition duration-200 font-semibold flex items-center justify-center space-x-2 shadow-lg">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Save Changes</span>
-                        </button>
-                        
                         <a href="{% url 'dashboard' %}" 
                            class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-xl hover:bg-gray-600 transition duration-200 font-semibold flex items-center justify-center space-x-2 shadow-lg">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,6 +154,14 @@
                             </svg>
                             <span>Cancel</span>
                         </a>
+
+                        <button type="submit" 
+                                class="flex-1 bg-gradient-to-r from-pink-500 to-orange-500 text-white px-6 py-3 rounded-xl hover:from-pink-600 hover:to-orange-600 transition duration-200 font-semibold flex items-center justify-center space-x-2 shadow-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>Save Changes</span>
+                        </button>
                     </div>
                 </form>
             </div>

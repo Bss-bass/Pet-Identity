@@ -111,14 +111,6 @@
 
                     <!-- Action Buttons -->
                     <div class="flex space-x-4 pt-6">
-                        <button type="submit" 
-                                class="flex-1 bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-6 py-3 rounded-xl hover:from-teal-600 hover:to-cyan-700 transition duration-200 font-semibold flex items-center justify-center space-x-2 shadow-lg">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Update Record</span>
-                        </button>
-                        
                         <a href="{% url 'view_medical_record' pet.id %}" 
                            class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-xl hover:bg-gray-600 transition duration-200 font-semibold flex items-center justify-center space-x-2 shadow-lg">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,6 +118,14 @@
                             </svg>
                             <span>Cancel</span>
                         </a>
+
+                        <button type="submit" 
+                                class="flex-1 bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-6 py-3 rounded-xl hover:from-teal-600 hover:to-cyan-700 transition duration-200 font-semibold flex items-center justify-center space-x-2 shadow-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>Update Record</span>
+                        </button>
                     </div>
                 </form>
             </div>

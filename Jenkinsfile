@@ -16,7 +16,7 @@ pipeline {
     EMAIL_HOST_USER = credentials('email-host-user-id')
     EMAIL_HOST_PASSWORD = credentials('email-host-password-id')
     DEFAULT_FROM_EMAIL = credentials('default-from-email-id')
-    SERVER_IP = "34.158.52.225" // Replace with your actual server IP
+    SERVER_IP = "35.187.243.81" // Replace with your actual server IP
     NGROK_DOMAIN = "unslimly-nonarticulative-lindsy.ngrok-free.dev" // Replace with your actual ngrok domain
     COMPOSE_PATH = "/docker-compose.yml"
   }

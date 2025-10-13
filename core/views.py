@@ -84,6 +84,8 @@ class DashboardView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = ['core.view_pet', 'core.view_medicalrecord', 'core.view_doctor']
 
     def get(self, request):
+        if request.user.role == 'DOCTOR':
+            return redirect('doctor_dashboard')
         if request.user.role != 'OWNER':
             return HttpResponseForbidden("You are not authorized to view this page.")
         pets = Pet.objects.filter(owner=request.user)

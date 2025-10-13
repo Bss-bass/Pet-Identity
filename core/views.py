@@ -84,6 +84,7 @@ class DashboardView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = ['core.view_pet', 'core.view_medicalrecord', 'core.view_doctor']
 
     def get(self, request):
+        # ถ้าเป็น doctor ให้ไปที่ /core/doctor_dashboard/
         if request.user.role == 'DOCTOR':
             return redirect('doctor_dashboard')
         if request.user.role != 'OWNER':
